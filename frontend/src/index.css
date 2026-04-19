@@ -1,0 +1,112 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html, body, #root {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    background-color: #0A0E1A;
+    color: #F9FAFB;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  /* Scrollbar stili */
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0A0E1A;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #1F2937;
+    border-radius: 4px;
+  }
+}
+
+@layer components {
+  /* Fiyat titreşim animasyonları */
+  .price-flash-green {
+    animation: flashGreen 0.6s ease-out;
+  }
+  .price-flash-red {
+    animation: flashRed 0.6s ease-out;
+  }
+
+  @keyframes flashGreen {
+    0% { background-color: rgba(16, 185, 129, 0.3); }
+    100% { background-color: transparent; }
+  }
+  @keyframes flashRed {
+    0% { background-color: rgba(239, 68, 68, 0.3); }
+    100% { background-color: transparent; }
+  }
+
+  /* Skeleton loader */
+  .skeleton {
+    background: linear-gradient(90deg, #1F2937 25%, #374151 50%, #1F2937 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: 4px;
+  }
+
+  @keyframes skeleton-loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* Konverjans skor barı parlaması */
+  .convergence-glow {
+    box-shadow: 0 0 12px rgba(0, 212, 170, 0.3);
+  }
+
+  /* Kart hover efekti */
+  .card-hover {
+    transition: all 0.2s ease;
+  }
+  .card-hover:active {
+    transform: scale(0.98);
+    background-color: #1a2332;
+  }
+
+  /* Pull to refresh */
+  .pull-indicator {
+    transition: transform 0.3s ease;
+  }
+
+  /* Tab bar safe area */
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 16px);
+  }
+}
+
+@layer utilities {
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Skeleton Loading */
+.skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
