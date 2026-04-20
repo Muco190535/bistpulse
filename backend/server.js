@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const fetch = require('node-fetch');
+const { scrapeTedbirli } = require('./tedbirli');
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -230,6 +231,7 @@ app.get('/api/technicals',async(req,res)=>{
 app.get('/api/currency',async(req,res)=>res.json(await fetchCurrency()));
 app.get('/api/indices',async(req,res)=>res.json(await fetchIndices()));
 app.get('/api/kap',async(req,res)=>res.json(await fetchKAP()));
+app.get('/api/tedbirli',async(req,res)=>{const ck='tedbirli';const cc=gc(ck,30*60*1000);if(cc)return res.json(cc);try{const data=await scrapeTedbirli();sc(ck,data);res.json(data);}catch(e){console.error('tedbirli err:',e.message);res.status(502).json({error:'source_unavailable',message:e.message});}});
 
 app.get('/api/historical/:symbol',async(req,res)=>{
   const sym=req.params.symbol.toUpperCase(),range=req.query.range||'6mo';

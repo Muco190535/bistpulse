@@ -1,4 +1,6 @@
 import { useStore } from '../../store/useStore';
+import { useTedbirli } from '../../hooks/useAPI';
+import type { TedbirliItem } from '../../hooks/useAPI';
 import { menuItems } from '../../data/menuItems';
 import * as mc from '../../data/menuContents';
 
@@ -295,19 +297,8 @@ export const MenuContentModal = ({ menuId, onClose }: Props) => {
           </button>
         ))}
 
-        {/* TEDBİRLİ HİSSELER */}
-        {menuId === 'tedbirli-hisseler' && mc.tedbirliHisselerData.map((t, i) => (
-          <div key={i} className="bg-dark-card rounded-xl p-3 border border-brand-red/20">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-sm font-bold font-mono text-text-primary">{t.symbol}</span>
-              <span className="text-[10px] bg-brand-red/20 text-brand-red px-2 py-0.5 rounded-full font-bold">{t.reason}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] text-text-secondary">Başlangıç: {t.since}</span>
-              <span className="text-[10px] text-text-secondary">{t.marketCap}</span>
-            </div>
-          </div>
-        ))}
+        {/* TEDBİRLİ HİSSELER — canlı backend verisi */}
+        {menuId === 'tedbirli-hisseler' && <TedbirliSection onSelect={handleStock} />}
 
         {/* İŞ ANLAŞMALARI, DİĞERLERİ — Genel fallback */}
         {['is-anlasmalar', 'hisse-radar', 'teknik-tarama', 'akd-tarama', 'takas-tarama'].includes(menuId) && (
@@ -321,5 +312,83 @@ export const MenuContentModal = ({ menuId, onClose }: Props) => {
         )}
       </div>
     </div>
+  );
+};
+
+// ============================================
+// TEDBİRLİ HİSSELER — canlı veri (rotaborsa.com via backend)
+// ============================================
+const formatDateTR = (iso: string | null) => {
+  if (!iso) return '—';
+  const [, m, d] = iso.split('-');
+  const aylar = ['', 'Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+  return `${parseInt(d)} ${aylar[parseInt(m)] || m}`;
+};
+
+export const TedbirliSection = ({ onSelect }: { onSelect: (sym: string) => void }) => {
+  const { data, loading, error } = useTedbirli();
+
+  if (loading) {
+    return (
+      <div className="text-center py-8">
+        <div className="inline-block w-6 h-6 border-2 border-brand-red/30 border-t-brand-red rounded-full animate-spin" />
+        <p className="text-xs text-text-secondary mt-3">Tedbirli hisseler yükleniyor…</p>
+      </div>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <div className="text-center py-8">
+        <span className="text-2xl">⚠️</span>
+        <p className="text-xs text-text-secondary mt-2">{error || 'Veri alınamadı'}</p>
+      </div>
+    );
+  }
+
+  const active = data.items.filter(t => t.status === 'active');
+
+  if (active.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <span className="text-2xl">✅</span>
+        <p className="text-xs text-text-secondary mt-2">Şu an VBTS kapsamında tedbirli hisse bulunmuyor.</p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="flex items-center justify-between mb-1 px-1">
+        <span className="text-[10px] font-bold text-brand-red">
+          🛡️ VBTS — {active.length} AKTİF TEDBİR
+        </span>
+        <span className="text-[9px] text-text-secondary">
+          Kaynak: {data.source}
+        </span>
+      </div>
+      {active.map((t: TedbirliItem, i: number) => (
+        <button
+          key={`${t.symbol}-${i}`}
+          onClick={() => onSelect(t.symbol)}
+          className="w-full text-left bg-dark-card rounded-xl p-3 border border-brand-red/20 card-hover"
+        >
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-sm font-bold font-mono text-text-primary">{t.symbol}</span>
+            <span className="text-[10px] bg-brand-red/20 text-brand-red px-2 py-0.5 rounded-full font-bold">
+              {t.reason}
+            </span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] text-text-secondary">
+              Başlangıç: {formatDateTR(t.since)}
+            </span>
+            <span className="text-[10px] text-text-secondary">
+              Bitiş: <span className="text-brand-yellow font-bold">{formatDateTR(t.until)}</span>
+            </span>
+          </div>
+        </button>
+      ))}
+    </>
   );
 };

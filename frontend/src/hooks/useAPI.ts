@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useStore } from '../store/useStore';
 
 const API = '/api';
 
@@ -102,3 +103,60 @@ export function useKAP() {
 }
 
 export type { PriceData, TechnicalData, CurrencyData, IndexData };
+
+// ============================================
+// TEDBİRLİ HİSSELER (VBTS)
+// Kaynak: rotaborsa.com via backend scrape
+// 30 dk cache backend'de, frontend 5 dk'da bir yeniler
+// ============================================
+
+export interface TedbirliItem {
+  symbol: string;
+  reason: string;
+  since: string | null;
+  until: string | null;
+  measures: {
+    acigaSatis: boolean;
+    brutTakas: boolean;
+    emirPaketi: boolean;
+    tekFiyat: boolean;
+  };
+  status: 'active' | 'expired';
+}
+
+export interface TedbirliResponse {
+  source: string;
+  sourceUrl: string;
+  fetchedAt: string;
+  total: number;
+  activeCount: number;
+  expiredCount: number;
+  items: TedbirliItem[];
+}
+
+export function useTedbirli() {
+  const [data, setData] = useState<TedbirliResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const setMenuCount = useStore(s => s.setMenuCount);
+
+  const load = useCallback(async () => {
+    const d = await f<TedbirliResponse>('/tedbirli');
+    if (d) {
+      setData(d);
+      setError(null);
+      setMenuCount('tedbirli-hisseler', d.activeCount);
+    } else {
+      setError('Tedbirli hisse verisi yüklenemedi');
+    }
+    setLoading(false);
+  }, [setMenuCount]);
+
+  useEffect(() => {
+    load();
+    const i = setInterval(load, 5 * 60 * 1000);
+    return () => clearInterval(i);
+  }, [load]);
+
+  return { data, loading, error, refresh: load };
+}

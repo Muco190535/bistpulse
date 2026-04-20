@@ -6,3 +6,10 @@ dist/
 .cache/
 .DS_Store
 package-lock.json
+
+# Yedekler ve geliştirme scriptleri
+*.backup
+*.bak
+backend/test-*.js
+frontend/test-*.js
+logs/
