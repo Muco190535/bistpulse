@@ -4,6 +4,13 @@ interface TelegramWebApp {
   close: () => void;
   setHeaderColor?: (color: string) => void;
   setBackgroundColor?: (color: string) => void;
+  // Harici link açma (tarayıcıda) — KAP haberleri için
+  openLink?: (url: string, options?: { try_instant_view?: boolean }) => void;
+  // Telegram içi link açma (t.me/...)
+  openTelegramLink?: (url: string) => void;
+  // Alert / confirm (Settings'te "silmek istediğine emin misin" gibi)
+  showAlert?: (message: string, callback?: () => void) => void;
+  showConfirm?: (message: string, callback?: (confirmed: boolean) => void) => void;
   MainButton: {
     text: string;
     show: () => void;
@@ -35,7 +42,6 @@ interface TelegramWebApp {
     };
   };
 }
-
 interface Window {
   Telegram?: {
     WebApp?: TelegramWebApp;

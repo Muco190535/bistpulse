@@ -209,16 +209,31 @@ export const HomePage = () => {
               </div>
             </div>
             {filteredKap.length > 0 ? filteredKap.slice(0, 5).map((k, i) => (
-              <div key={i} className="flex items-start gap-2 py-1.5 border-b border-dark-border/30 last:border-0">
+              <button
+                key={i}
+                onClick={() => {
+                  if (!k.url) return;
+                  // Telegram Mini App içindeysek Telegram'ın API'siyle aç (harici tarayıcıda)
+                  const tg = window.Telegram?.WebApp;
+                  if (tg?.openLink) {
+                    tg.openLink(k.url);
+                  } else {
+                    window.open(k.url, '_blank', 'noopener,noreferrer');
+                  }
+                }}
+                disabled={!k.url}
+                className="w-full text-left flex items-start gap-2 py-1.5 border-b border-dark-border/30 last:border-0 hover:bg-dark-border/20 active:bg-dark-border/40 transition-colors rounded px-1 -mx-1 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 <span className="text-[10px] text-text-secondary font-mono mt-0.5 w-10 flex-shrink-0">{k.time}</span>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
                     {k.symbol && <span className="text-[10px] font-bold font-mono text-brand-teal">{k.symbol}</span>}
                     {k.important && <div className="w-1.5 h-1.5 rounded-full bg-brand-red flex-shrink-0" />}
+                    {k.url && <span className="text-[9px] text-text-secondary ml-auto">↗</span>}
                   </div>
                   <p className="text-[11px] text-text-secondary line-clamp-1">{k.title}</p>
                 </div>
-              </div>
+              </button>
             )) : (
               <p className="text-[11px] text-text-secondary py-3 text-center">KAP bildirimleri yükleniyor veya seans dışı...</p>
             )}
