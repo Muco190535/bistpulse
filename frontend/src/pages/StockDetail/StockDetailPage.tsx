@@ -4,6 +4,7 @@ import { getStock } from '../../data/stocks';
 import { getConvergence } from '../../data/convergence';
 import { getAISummary } from '../../data/aiSummaries';
 import { useCurrentPrice } from '../../hooks/usePriceSimulation';
+import { useTechnicals } from '../../hooks/useAPI';
 import { ConvergenceBar } from '../../components/Cards/ConvergenceBar';
 
 type DetailTab = 'detail' | 'depth' | 'trades' | 'custody' | 'ai';
@@ -16,6 +17,7 @@ export const StockDetailPage = () => {
   const convergence = selectedStock ? getConvergence(selectedStock) : null;
   const aiSummary = selectedStock ? getAISummary(selectedStock) : null;
   const { price, flash } = useCurrentPrice(selectedStock || '');
+  const { data: techData } = useTechnicals(selectedStock || '');
 
   if (!stock) return null;
 
@@ -137,18 +139,14 @@ export const StockDetailPage = () => {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-2">
               {[
-                { label: 'Piyasa Değeri', value: `${(stock.marketCap / 1000).toFixed(0)} Milyar₺` },
-                { label: 'Hacim', value: `${(stock.volume / 1000000).toFixed(1)}M lot` },
+                { label: 'Piyasa Değeri', value: `${(stock.marketCapMN / 1000).toFixed(0)} Milyar₺` },
+                { label: 'Piyasa Değeri ($)', value: `$${(stock.marketCapUSD / 1000).toFixed(1)} Milyar` },
+                { label: 'Hacim', value: `${(stock.volume / 1_000_000).toFixed(1)}M lot` },
                 { label: '52H Yüksek', value: `${stock.high52w.toFixed(2)}₺` },
                 { label: '52H Düşük', value: `${stock.low52w.toFixed(2)}₺` },
-                { label: 'F/K', value: stock.pe > 0 ? stock.pe.toFixed(1) : 'N/A' },
-                { label: 'PD/DD', value: stock.pb.toFixed(2) },
-                { label: 'FD/FAVÖK', value: stock.evEbitda > 0 ? stock.evEbitda.toFixed(1) : 'N/A' },
-                { label: 'ROE', value: `%${stock.roe.toFixed(1)}` },
-                { label: 'ROIC', value: `%${stock.roic.toFixed(1)}` },
-                { label: 'Net Borç/FAVÖK', value: stock.netDebtEbitda.toFixed(1) },
-                { label: 'Temettü Getirisi', value: `%${stock.dividendYield.toFixed(1)}` },
-                { label: 'Yabancı Oranı', value: `%${stock.foreignOwnership.toFixed(1)}` },
+                { label: 'Halka Açıklık', value: `%${stock.freeFloatPct.toFixed(1)}` },
+                { label: 'Sermaye', value: `${stock.capitalMN.toFixed(0)} mn₺` },
+                { label: 'Sektör', value: stock.sector || '-' },
               ].map((item) => (
                 <div key={item.label} className="bg-dark-card rounded-xl p-3 border border-dark-border">
                   <p className="text-[10px] text-text-secondary">{item.label}</p>
@@ -162,14 +160,14 @@ export const StockDetailPage = () => {
               <h3 className="text-sm font-bold text-text-primary mb-3">📈 Teknik Göstergeler</h3>
               <div className="space-y-2">
                 {[
-                  { label: 'RSI (14)', value: stock.rsi.toFixed(1), color: stock.rsi > 70 ? 'text-brand-red' : stock.rsi < 30 ? 'text-brand-green' : 'text-text-primary' },
-                  { label: 'MACD', value: stock.macdSignal === 'bullish' ? '🟢 Pozitif' : stock.macdSignal === 'bearish' ? '🔴 Negatif' : '⚪ Nötr', color: 'text-text-primary' },
-                  { label: 'EMA 20', value: `${stock.ema20.toFixed(2)}₺`, color: displayPrice > stock.ema20 ? 'text-brand-green' : 'text-brand-red' },
-                  { label: 'EMA 50', value: `${stock.ema50.toFixed(2)}₺`, color: displayPrice > stock.ema50 ? 'text-brand-green' : 'text-brand-red' },
-                  { label: 'EMA 200', value: `${stock.ema200.toFixed(2)}₺`, color: displayPrice > stock.ema200 ? 'text-brand-green' : 'text-brand-red' },
-                  { label: 'VWAP', value: `${stock.vwap.toFixed(2)}₺`, color: displayPrice > stock.vwap ? 'text-brand-green' : 'text-brand-red' },
-                  { label: 'Relatif Hacim', value: `${stock.relativeVolume.toFixed(1)}x`, color: stock.relativeVolume > 1.5 ? 'text-brand-yellow' : 'text-text-primary' },
-                  { label: 'ADX', value: stock.adx.toFixed(1), color: stock.adx > 25 ? 'text-brand-teal' : 'text-text-secondary' },
+                  { label: 'RSI (14)', value: (techData?.rsi ?? 0).toFixed(1), color: (techData?.rsi ?? 50) > 70 ? 'text-brand-red' : (techData?.rsi ?? 50) < 30 ? 'text-brand-green' : 'text-text-primary' },
+                  { label: 'MACD', value: techData?.macd?.trend === 'bullish' ? '🟢 Pozitif' : techData?.macd?.trend === 'bearish' ? '🔴 Negatif' : '⚪ Nötr', color: 'text-text-primary' },
+                  { label: 'EMA 20', value: `${(techData?.ema20 ?? 0).toFixed(2)}₺`, color: displayPrice > (techData?.ema20 ?? 0) ? 'text-brand-green' : 'text-brand-red' },
+                  { label: 'EMA 50', value: `${(techData?.ema50 ?? 0).toFixed(2)}₺`, color: displayPrice > (techData?.ema50 ?? 0) ? 'text-brand-green' : 'text-brand-red' },
+                  { label: 'EMA 200', value: `${(techData?.ema200 ?? 0).toFixed(2)}₺`, color: displayPrice > (techData?.ema200 ?? 0) ? 'text-brand-green' : 'text-brand-red' },
+                  { label: 'Bollinger Üst', value: `${(techData?.bollinger?.upper ?? 0).toFixed(2)}₺`, color: displayPrice > (techData?.bollinger?.upper ?? Infinity) ? 'text-brand-red' : 'text-text-primary' },
+                  { label: 'Bollinger Alt', value: `${(techData?.bollinger?.lower ?? 0).toFixed(2)}₺`, color: displayPrice < (techData?.bollinger?.lower ?? 0) ? 'text-brand-green' : 'text-text-primary' },
+                  { label: 'Sinyal', value: techData?.signal === 'strong_buy' ? '🚀 Güçlü Al' : techData?.signal === 'buy' ? '🟢 Al' : techData?.signal === 'strong_sell' ? '🔻 Güçlü Sat' : techData?.signal === 'sell' ? '🔴 Sat' : '⚪ Nötr', color: 'text-text-primary' },
                 ].map((item) => (
                   <div key={item.label} className="flex items-center justify-between">
                     <span className="text-xs text-text-secondary">{item.label}</span>

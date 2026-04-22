@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useStore } from './store/useStore';
 import { usePriceSimulation } from './hooks/usePriceSimulation';
+import { useStocks } from './hooks/useAPI';
 import { Header } from './components/Layout/Header';
 import { BottomNav } from './components/Layout/BottomNav';
 import { SearchModal } from './components/Layout/SearchModal';
@@ -19,6 +20,7 @@ function App() {
   const { activeTab, selectedStock } = useStore();
   const [showSplash, setShowSplash] = useState(true);
   usePriceSimulation();
+  useStocks(); // Uygulama başlangıcında 609 hisse'yi backend'den yükle
 
   useEffect(() => {
     const tg = window.Telegram?.WebApp;
